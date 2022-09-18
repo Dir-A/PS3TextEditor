@@ -49,10 +49,10 @@ private:
 	std::vector<DWORD> m_vppStr;
 
 public:
-	BOOL ReadPS3File();
-	VOID SetPS3Info();
 	PS3TextDump(std::wstring& wsPath);
 	~PS3TextDump();
+	BOOL ReadPS3File();
+	VOID SetPS3Info();
 	VOID SearchOffset();
 	BOOL CreateDumpFile();
 	VOID DumpText();
