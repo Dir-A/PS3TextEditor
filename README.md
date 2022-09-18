@@ -6,3 +6,6 @@ Maybe sjis2GBK or sjis2unicode function will be added later
 # Tested
 アマツツミ  
 ![img](https://github.com/Dir-A/PS3TextEditor/blob/main/test0.png)
+# Reference
+https://github.com/xmoeproject/CMVS-Engine/tree/master/Ps3TextDumper  
+https://github.com/Yggdrasill-Moe/Niflheim/tree/master/cmvs
