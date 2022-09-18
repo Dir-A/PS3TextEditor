@@ -14,7 +14,6 @@ PS3TextEditor::~PS3TextEditor()
 }
 
 
-
 PS3TextDump::PS3TextDump(std::wstring& wsPath) :
 	m_wsPath(wsPath),
 	m_fpTextFile(0)
@@ -114,7 +113,6 @@ VOID PS3TextDump::DumpText()
 		}
 	}
 }
-
 
 
 PS3TextInset::PS3TextInset(std::wstring& wsPath) : m_wsPath(wsPath)

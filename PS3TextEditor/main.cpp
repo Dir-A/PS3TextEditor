@@ -9,8 +9,12 @@ int main()
 	EnumFilesW enumFileW(basePathW);
 	filesPathW = enumFileW.GetFilesPath();
 
+	std::cout << "Type 'd' to extract all the text in the .ps3 file and save it as .txt\n"
+			  << "Type 'i' to insert the text of all .txt files into the .ps3 file\n" << std::endl;
+	std::cout << "Input:";
+
 	char flag = 0;
-	flag = getchar();
+	std::cin >> flag;
 
 	switch (flag)
 	{
