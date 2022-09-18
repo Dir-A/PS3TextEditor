@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <iostream>
+#include <fstream>
 #include <vector>
 
 class PS3TextEditor
@@ -8,41 +9,67 @@ class PS3TextEditor
 private:
 	struct PS3HEADER
 	{
-		DWORD signature;
-		DWORD header_length;
-		DWORD unknown;
-		DWORD key;
-		DWORD text_count;
-		DWORD code_block_length;
-		DWORD unknown2;
-		DWORD text_block_length;
-		DWORD unknown3;
-		DWORD compress_size;
-		DWORD decompress_size;
-		DWORD unknown4;
+		DWORD dwSignature;
+		DWORD dwHeaderLen;
+		DWORD dwUnknown0;
+		DWORD dwKey;
+		DWORD dwTextCount;
+		DWORD dwCodeBlockLen;
+		DWORD dwUnknown2;
+		DWORD dwTextBlockLen;
+		DWORD dwUnknown3;
+		DWORD dwCompressSize;
+		DWORD dwDecompressSize;
+		DWORD dwUnknown4;
 	};
 
-	PS3HEADER m_Header;
-	BYTE m_abFlagPushStr[4];
-	DWORD m_pCodeBlock;
-	DWORD m_pTextBlock;
-	DWORD m_dwFileSize;
-	HANDLE m_hPS3File;
-	DWORD m_pPS3File;
-	FILE* fp;
-	std::wstring m_wsFilePath;
-	std::vector<DWORD> m_vdOffsetPushStr;
-	//std::vector<DWORD> m_vsText;
+	struct PS3INFO
+	{
+		DWORD pPS3File;
+		DWORD pCodeBlock;
+		DWORD pTextBlock;
+	};
+
 public:
-	PS3TextEditor(std::wstring& wsFilePath);
-	BOOL DumpPS3Text();
-	BOOL ReadPS3File();
-	BOOL GetPS3Info();
-	VOID SearchOffset();
-	VOID ReadPS3Text();
-	VOID CleanPS3File();
-	BOOL CreateDumpFile();
+	PS3HEADER m_Header;
+	PS3INFO m_PS3Info;
+	BYTE m_abFlagPushStr[4];
+	virtual BOOL ReadPS3File() = 0;
+	virtual VOID SetPS3Info() = 0;
+	PS3TextEditor();
 	~PS3TextEditor();
 
 };
 
+class PS3TextDump : public PS3TextEditor
+{
+private:
+	FILE* m_fpTextFile;
+	std::wstring m_wsPath;
+	std::vector<DWORD> m_vppStr;
+
+public:
+	BOOL ReadPS3File();
+	VOID SetPS3Info();
+	PS3TextDump(std::wstring& wsPath);
+	~PS3TextDump();
+	VOID SearchOffset();
+	BOOL CreateDumpFile();
+	VOID DumpText();
+
+};
+
+class PS3TextInset : public PS3TextEditor
+{
+private:
+	FILE* m_fpPS3File;
+	std::wstring& m_wsPath;
+
+public:
+	PS3TextInset(std::wstring& wsPath);
+	~PS3TextInset();
+	BOOL ReadPS3File();
+	VOID SetPS3Info();
+	BOOL InsetTextFile();
+
+};

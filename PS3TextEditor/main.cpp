@@ -9,11 +9,29 @@ int main()
 	EnumFilesW enumFileW(basePathW);
 	filesPathW = enumFileW.GetFilesPath();
 
-	for (std::wstring fw : filesPathW)
+	char flag = 0;
+	flag = getchar();
+
+	switch (flag)
 	{
-		if (fw.find(L".ps3") != std::wstring::npos)
+	case 'd':
+		for (std::wstring& fw : filesPathW)
 		{
-			PS3TextEditor p(fw);
+			if (fw.find(L".ps3") != std::wstring::npos)
+			{
+				PS3TextDump dump(fw);
+			}
 		}
+		break;
+	case 'i':
+		for (std::wstring& fw : filesPathW)
+		{
+			if (fw.find(L".ps3.txt") != std::wstring::npos)
+			{
+				PS3TextInset inset(fw);
+			}
+		}
+		break;
 	}
+
 }
