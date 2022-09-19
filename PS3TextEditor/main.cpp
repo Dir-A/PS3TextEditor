@@ -15,14 +15,15 @@ int main()
 
 	char flag = 0;
 	std::cin >> flag;
-
 	switch (flag)
 	{
 	case 'd':
 		for (std::wstring& fw : filesPathW)
 		{
-			if (fw.find(L".ps3") != std::wstring::npos)
+
+			if (fw.find(L".ps3") != std::wstring::npos && fw.find(L".ps3.txt") == std::wstring::npos)
 			{
+				std::wcout << "Dump:" << fw << std::endl;
 				PS3TextDump dump(fw);
 			}
 		}
@@ -32,10 +33,13 @@ int main()
 		{
 			if (fw.find(L".ps3.txt") != std::wstring::npos)
 			{
+				std::wcout << "Inset   :" << fw << std::endl;
 				PS3TextInset inset(fw);
 			}
 		}
 		break;
 	}
+
+	system("pause");
 
 }

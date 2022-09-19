@@ -31,13 +31,13 @@ private:
 	};
 
 public:
+	PS3TextEditor();
+	~PS3TextEditor();
 	PS3HEADER m_Header;
 	PS3INFO m_PS3Info;
 	BYTE m_abFlagPushStr[4];
 	virtual BOOL ReadPS3File() = 0;
 	virtual VOID SetPS3Info() = 0;
-	PS3TextEditor();
-	~PS3TextEditor();
 
 };
 
@@ -62,6 +62,7 @@ public:
 class PS3TextInset : public PS3TextEditor
 {
 private:
+	DWORD m_countInset;
 	FILE* m_fpPS3File;
 	std::wstring& m_wsPath;
 
