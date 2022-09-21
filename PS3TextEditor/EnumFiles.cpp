@@ -93,11 +93,11 @@ VOID EnumFilesW::FindFiles(std::wstring strPath)
 				filesPath.push_back(everyPath + isFile);
 				filesName.push_back(isFile);
 			}
-			//else if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 && (isFile != L"." && isFile != L".."))
-			//{
-			//	std::wstring Rp = everyPath + fd.cFileName + L"\\";
-			//	directory.push(Rp);
-			//}
+			else if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 && (isFile != L"." && isFile != L".."))
+			{
+				std::wstring Rp = everyPath + fd.cFileName + L"\\";
+				directory.push(Rp);
+			}
 		} while (FindNextFileW(hFind, &fd));
 		directory.pop();
 		FindClose(hFind);

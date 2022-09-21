@@ -4,10 +4,10 @@
 
 int main()
 {
-	std::vector<std::wstring> filesPathW;
+	std::vector<std::wstring> filesNameW;
 	std::wstring basePathW = L".\\";
 	EnumFilesW enumFileW(basePathW);
-	filesPathW = enumFileW.GetFilesPath();
+	filesNameW = enumFileW.GetFilesName();
 
 	std::cout << "Type 'd' to extract all the text in the .ps3 file and save it as .txt\n"
 			  << "Type 'i' to insert the text of all .txt files into the .ps3 file\n" << std::endl;
@@ -18,7 +18,7 @@ int main()
 	switch (flag)
 	{
 	case 'd':
-		for (std::wstring& fw : filesPathW)
+		for (std::wstring& fw : filesNameW)
 		{
 
 			if (fw.find(L".ps3") != std::wstring::npos && fw.find(L".ps3.txt") == std::wstring::npos)
@@ -29,7 +29,7 @@ int main()
 		}
 		break;
 	case 'i':
-		for (std::wstring& fw : filesPathW)
+		for (std::wstring& fw : filesNameW)
 		{
 			if (fw.find(L".ps3.txt") != std::wstring::npos)
 			{
