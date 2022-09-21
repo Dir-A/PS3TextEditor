@@ -7,10 +7,10 @@ int main()
 	std::vector<std::wstring> filesNameW;
 	std::wstring basePathW = L".\\";
 	EnumFilesW enumFileW(basePathW);
-	filesNameW = enumFileW.GetFilesName();
+	filesNameW = enumFileW.GetFilesNameBasePath();
 
-	std::cout << "Type 'd' to extract all the text in the .ps3 file and save it as .txt\n"
-			  << "Type 'i' to insert the text of all .txt files into the .ps3 file\n" << std::endl;
+	std::cout << "Type 'd' to extract all the text in the .ps3 file and save it as .txt\n";
+	std::cout << "Type 'i' to insert the text of all .txt files into the .ps3 file\n" << std::endl;
 	std::cout << "Input:";
 
 	char flag = 0;
@@ -21,7 +21,8 @@ int main()
 		for (std::wstring& fw : filesNameW)
 		{
 
-			if (fw.find(L".ps3") != std::wstring::npos && fw.find(L".ps3.txt") == std::wstring::npos)
+			if ((fw.find(L".ps3") != std::wstring::npos &&fw.find(L".ps3.txt") == std::wstring::npos) ||
+				(fw.find(L".ps2") != std::wstring::npos &&fw.find(L".ps2.txt") == std::wstring::npos))
 			{
 				std::wcout << "Dump:" << fw << std::endl;
 				PS3TextDump dump(fw);
@@ -31,7 +32,7 @@ int main()
 	case 'i':
 		for (std::wstring& fw : filesNameW)
 		{
-			if (fw.find(L".ps3.txt") != std::wstring::npos)
+			if (fw.find(L".ps3.txt") != std::wstring::npos || fw.find(L".ps2.txt") != std::wstring::npos)
 			{
 				std::wcout << "Inset   :" << fw << std::endl;
 				PS3TextInset inset(fw);

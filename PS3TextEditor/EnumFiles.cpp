@@ -34,7 +34,6 @@ VOID EnumFilesA::FindFiles(std::string strPath)
 			if ((fd.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) != 0)
 			{
 				filesPath.push_back(everyPath + isFile);
-				filesName.push_back(isFile);
 			}
 			else if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 && (isFile != "." && isFile != ".."))
 			{
@@ -54,7 +53,28 @@ std::vector<std::string>& EnumFilesA::GetFilesPath()
 
 std::vector<std::string>& EnumFilesA::GetFilesName()
 {
+	SIZE_T len = 0;
+	std::string name;
+
+	for (std::string p : filesPath)
+	{
+		len = p.find_last_of("\\") + 1;
+		name = p.substr(len, p.length() - len);
+		filesName.push_back(name);
+	}
 	return filesName;
+}
+
+std::vector<std::string>& EnumFilesA::GetFilesNameBasePath()
+{
+	for (std::string p : filesPath)
+	{
+		if (p.find("\\", 2) == std::string::npos)
+		{
+			filesNameBasePath.push_back(p);
+		}
+	}
+	return filesNameBasePath;
 }
 
 //EnumFilesW
@@ -91,7 +111,6 @@ VOID EnumFilesW::FindFiles(std::wstring strPath)
 			if ((fd.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) != 0)
 			{
 				filesPath.push_back(everyPath + isFile);
-				filesName.push_back(isFile);
 			}
 			else if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 && (isFile != L"." && isFile != L".."))
 			{
@@ -111,5 +130,26 @@ std::vector<std::wstring>& EnumFilesW::GetFilesPath()
 
 std::vector<std::wstring>& EnumFilesW::GetFilesName()
 {
+	SIZE_T len = 0;
+	std::wstring name;
+
+	for (std::wstring p : filesPath)
+	{
+		len = p.find_last_of(L"\\") + 1;
+		name = p.substr(len, p.length() - len);
+		filesName.push_back(name);
+	}
 	return filesName;
+}
+
+std::vector<std::wstring>& EnumFilesW::GetFilesNameBasePath()
+{
+	for (std::wstring p : filesPath)
+	{
+		if (p.find(L"\\", 2) == std::wstring::npos)
+		{
+			filesNameBasePath.push_back(p);
+		}
+	}
+	return filesNameBasePath;
 }
