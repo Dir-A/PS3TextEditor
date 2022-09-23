@@ -3,6 +3,8 @@ Insert text at the end of the script file while modifying the address
 Maybe sjis2GBK or sjis2unicode function will be added later  
 
 Support .ps3 .ps2  
+Need to decrypt file first  
+You can use Garbro to extract script files.
 # Usage
 Input 'd' to extract text from .ps3 .ps2 files and save it as .txt  
 Input 'i' to insert text from .txt files save it as .ps3.new  
