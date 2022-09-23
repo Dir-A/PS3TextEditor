@@ -18,9 +18,8 @@ PS3TextDump::PS3TextDump(std::wstring& wsPath) :
 	m_wsPath(wsPath),
 	m_fpTextFile(0)
 {
-	if (ReadPS3File())
+	if (GetPS3FileInfo())
 	{
-		SetPS3Info();
 		SearchOffset();
 		if (CreateDumpFile())
 		{
@@ -45,7 +44,7 @@ PS3TextDump::~PS3TextDump()
 	fclose(m_fpTextFile);
 }
 
-BOOL PS3TextDump::ReadPS3File()
+BOOL PS3TextDump::GetPS3FileInfo()
 {
 	HANDLE hFile = CreateFileW(m_wsPath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
@@ -55,32 +54,36 @@ BOOL PS3TextDump::ReadPS3File()
 	else
 	{
 		m_PS3Info.pPS3File = (DWORD)VirtualAlloc(NULL, GetFileSize(hFile, NULL), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		if (m_PS3Info.pPS3File != NULL)
+		{
+			if (ReadFile(hFile, (LPVOID)m_PS3Info.pPS3File, GetFileSize(hFile, NULL), NULL, NULL))
+			{
+				memcpy(&m_Header, (PVOID)m_PS3Info.pPS3File, sizeof(m_Header));
+				m_PS3Info.pCodeBlock = m_PS3Info.pPS3File + m_Header.dwHeaderLen;
+				m_PS3Info.pTextBlock = m_PS3Info.pPS3File + m_Header.dwHeaderLen + (4 * m_Header.dwTextCount) + m_Header.dwCodeBlockLen;
+				CloseHandle(hFile);
+				return TRUE;
+			}
+			else
+			{
+				CloseHandle(hFile);
+				return FALSE;
+			}
+		}
+		else
+		{
+			CloseHandle(hFile);
+			return FALSE;
+		}
 	}
 
-	if (ReadFile(hFile, (LPVOID)m_PS3Info.pPS3File, GetFileSize(hFile, NULL), NULL, NULL))
-	{
-		CloseHandle(hFile);
-		return TRUE;
-	}
-	else
-	{
-		CloseHandle(hFile);
-		return FALSE;
-	}
-}
-
-VOID PS3TextDump::SetPS3Info()
-{
-	memcpy(&m_Header, (VOID*)m_PS3Info.pPS3File, 0x30);
-	m_PS3Info.pCodeBlock = m_PS3Info.pPS3File + m_Header.dwHeaderLen;
-	m_PS3Info.pTextBlock = m_PS3Info.pPS3File + m_Header.dwHeaderLen + (4 * m_Header.dwTextCount) + m_Header.dwCodeBlockLen;
 }
 
 VOID PS3TextDump::SearchOffset()
 {
 	for (size_t i = 0; i < m_Header.dwCodeBlockLen; i++)
 	{
-		if (!memcmp(m_abFlagPushStr, (VOID*)(m_PS3Info.pCodeBlock + i), sizeof(m_abFlagPushStr)))
+		if (!memcmp(m_abFlagPushStr, (PVOID)(m_PS3Info.pCodeBlock + i), sizeof(m_abFlagPushStr)))
 		{
 			m_vppStr.push_back(m_PS3Info.pCodeBlock + i + sizeof(m_abFlagPushStr));
 		}
@@ -89,8 +92,22 @@ VOID PS3TextDump::SearchOffset()
 
 BOOL PS3TextDump::CreateDumpFile()
 {
+	errno_t err = 0;
 	std::wstring dumpFileName = m_wsPath + L".txt";
-	errno_t err = _wfopen_s(&m_fpTextFile, dumpFileName.c_str(), L"w+");
+	err = _wfopen_s(&m_fpTextFile, dumpFileName.c_str(), L"r");
+	if (!err && m_fpTextFile)
+	{
+		char flag = 0;
+		std::wcout << L"The text file already exist and need to be overwritten?(Y/N)";
+		std::cin >> flag;
+		if (flag == 'N')
+		{
+			return FALSE;
+		}
+		fclose(m_fpTextFile);
+	}
+
+	err = _wfopen_s(&m_fpTextFile, dumpFileName.c_str(), L"w+");
 	return ~err;
 }
 
@@ -103,13 +120,19 @@ VOID PS3TextDump::DumpText()
 
 	for (auto& p : m_vppStr)
 	{
-		strAddr = m_PS3Info.pTextBlock + *(DWORD*)p;
-		strFilter = (char*)strAddr;
+		strAddr = m_PS3Info.pTextBlock + *(PDWORD)p;
+		strFilter = (PCHAR)strAddr;
 
+		//Filter Files Name String Line
 		if (strFilter.empty() ||
 			strFilter.find(".ogg") != std::string::npos ||
+			strFilter.find(".wav") != std::string::npos ||
+			strFilter.find(".mv2") != std::string::npos ||
 			strFilter.find(".pb3") != std::string::npos ||
+			strFilter.find(".pb2") != std::string::npos ||
 			strFilter.find(".ps3") != std::string::npos ||
+			strFilter.find(".ps2") != std::string::npos ||
+			strFilter.find(".cur") != std::string::npos ||
 			strFilter.find(".cmv") != std::string::npos)
 		{
 			continue;
@@ -118,7 +141,7 @@ VOID PS3TextDump::DumpText()
 		{
 			textFileOffset = strAddr - m_PS3Info.pPS3File;
 			codeFileOffset = p - m_PS3Info.pPS3File;
-			fprintf_s(m_fpTextFile, "[Text:0x%08X Code:0x%08X]\nRaw:%s\nTra:\n\n", textFileOffset, codeFileOffset, (char*)strAddr);
+			fprintf_s(m_fpTextFile, "[Text:0x%08X Code:0x%08X]\nRaw:%s\nTra:\n\n", textFileOffset, codeFileOffset, (PCHAR)strAddr);
 			fflush(m_fpTextFile);
 		}
 	}
@@ -126,16 +149,15 @@ VOID PS3TextDump::DumpText()
 
 
 PS3TextInset::PS3TextInset(std::wstring& wsPath) :
-	m_wsPath(wsPath),
+	m_wsTextPath(wsPath),
 	m_countInset(0),
 	m_fpPS3File(0)
 {
-	if (ReadPS3File())
+	if (GetPS3FileInfo())
 	{
-		SetPS3Info();
 		if (InsetTextFile())
 		{
-			std::wcout << "Complete:" << m_wsPath << std::endl;
+			std::wcout << "Save      :" << m_wsPS3FilePath << L".new" << std::endl;
 			std::wcout << "InsetCount:" << m_countInset << '\n' << std::endl;
 		}
 		else
@@ -152,40 +174,28 @@ PS3TextInset::PS3TextInset(std::wstring& wsPath) :
 
 PS3TextInset::~PS3TextInset()
 {
-	free((VOID*)m_PS3Info.pPS3File);
+	free((PVOID)m_PS3Info.pPS3File);
 	fclose(m_fpPS3File);
 }
 
-BOOL PS3TextInset::ReadPS3File()
+BOOL PS3TextInset::GetPS3FileInfo()
 {
-	std::wstring ps3file;
-	ps3file = m_wsPath;
-	ps3file.erase(ps3file.length() - 4, 4);
+	m_wsPS3FilePath = m_wsTextPath;
+	m_wsPS3FilePath.erase(m_wsPS3FilePath.length() - 4, 4);//delete end of path string .txt
+	CopyFileW(m_wsPS3FilePath.c_str(), (m_wsPS3FilePath + L".new").c_str(), FALSE);
 
-	errno_t err = _wfopen_s(&m_fpPS3File, ps3file.c_str(), L"rb+");
+	errno_t err = _wfopen_s(&m_fpPS3File, (m_wsPS3FilePath + L".new").c_str(), L"rb+");
 	if (!err && m_fpPS3File)
 	{
-		m_PS3Info.pPS3File = (DWORD)malloc(sizeof(m_Header));
-		if (m_PS3Info.pPS3File != NULL)
-		{
-			fread_s((VOID*)m_PS3Info.pPS3File, 0x30, 1, 0x30, m_fpPS3File);
-			fflush(m_fpPS3File);
-			return TRUE;
-		}
-		return FALSE;
+		fread_s((PVOID)&m_Header, 0x30, 1, 0x30, m_fpPS3File);
+		fflush(m_fpPS3File);
+		return TRUE;
 	}
 	else
 	{
 		return FALSE;
 	}
 
-}
-
-VOID PS3TextInset::SetPS3Info()
-{
-	memcpy(&m_Header, (VOID*)m_PS3Info.pPS3File, 0x30);
-	m_PS3Info.pCodeBlock = m_PS3Info.pPS3File + m_Header.dwHeaderLen;
-	m_PS3Info.pTextBlock = m_PS3Info.pPS3File + m_Header.dwHeaderLen + (4 * m_Header.dwTextCount) + m_Header.dwCodeBlockLen;
 }
 
 BOOL PS3TextInset::InsetTextFile()
@@ -195,7 +205,7 @@ BOOL PS3TextInset::InsetTextFile()
 	DWORD strLen = 0;
 	FILE* fpTextFile;
 
-	errno_t err = _wfopen_s(&fpTextFile, m_wsPath.c_str(), L"r+");
+	errno_t err = _wfopen_s(&fpTextFile, m_wsTextPath.c_str(), L"r+");
 	if (!err && fpTextFile != NULL)
 	{
 		while (feof(fpTextFile) == 0)
@@ -217,11 +227,11 @@ BOOL PS3TextInset::InsetTextFile()
 
 			//Append text at the end of the file
 			fseek(m_fpPS3File, 0, SEEK_END);
-			fwrite(newText, sizeof(char), strLen, m_fpPS3File);
+			fwrite(newText, sizeof(BYTE), strLen, m_fpPS3File);
 
 			//Modify the codeblock PushStr address
 			fseek(m_fpPS3File, offsetCode, SEEK_SET);
-			fwrite(&m_Header.dwTextBlockLen, sizeof(char), 4, m_fpPS3File);
+			fwrite(&m_Header.dwTextBlockLen, sizeof(BYTE), sizeof(m_Header.dwTextBlockLen), m_fpPS3File);
 
 			//Fix the textblock size
 			m_Header.dwTextBlockLen += strLen;
@@ -235,13 +245,14 @@ BOOL PS3TextInset::InsetTextFile()
 		{
 			//Write back to .ps3 file header
 			fseek(m_fpPS3File, 0, SEEK_SET);
-			fwrite(&m_Header, sizeof(char), sizeof(m_Header), m_fpPS3File);
+			fwrite(&m_Header, sizeof(BYTE), sizeof(m_Header), m_fpPS3File);
 			fflush(m_fpPS3File);
 			fclose(fpTextFile);
 
 			return TRUE;
 		}
 
+		fclose(fpTextFile);
 		return FALSE;
 	}
 
