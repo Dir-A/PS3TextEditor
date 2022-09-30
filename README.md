@@ -4,7 +4,8 @@ Maybe sjis2GBK or sjis2unicode function will be added later
 
 Support .ps3 .ps2  
 Need to decrypt file first  
-You can use Garbro to extract script files.
+You can use Garbro to extract script files  
+or use [CmvsFileHook](https://github.com/Dir-A/CmvsFileHook)
 # Usage
 Input 'd' to extract text from .ps3 .ps2 files and save it as .txt  
 Input 'i' to insert text from .txt files save it as .ps3.new  
