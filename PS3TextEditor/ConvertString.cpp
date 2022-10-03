@@ -19,10 +19,10 @@ std::wstring StrToWstr(std::string& sStr)
 {
 	std::wstring result;
 
-	int len = MultiByteToWideChar(CP_ACP, NULL, sStr.c_str(), sStr.size(), NULL, NULL);
+	int len = MultiByteToWideChar(932, NULL, sStr.c_str(), sStr.size(), NULL, NULL);
 	wchar_t* buffer = new wchar_t[len + 1];
 
-	MultiByteToWideChar(CP_ACP, NULL, sStr.c_str(), sStr.size(), buffer, len);
+	MultiByteToWideChar(932, NULL, sStr.c_str(), sStr.size(), buffer, len);
 	buffer[len] = '\0';
 
 	result.append(buffer);

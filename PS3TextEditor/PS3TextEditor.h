@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "ConvertString.h"
 
 class PS3TextEditor
 {

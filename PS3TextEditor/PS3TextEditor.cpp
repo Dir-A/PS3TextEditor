@@ -1,6 +1,6 @@
 #include "PS3TextEditor.h"
 
-PS3TextEditor::PS3TextEditor() : 
+PS3TextEditor::PS3TextEditor() :
 	m_Header{ 0 },
 	m_PS3Info{ 0 },
 	m_abFlagPushStr{ 0x01,0x02,0x20,0x01 }
@@ -35,7 +35,7 @@ PS3TextDump::PS3TextDump(std::wstring& wsPath) :
 	{
 		std::wcout << "Read PS3File Failed!!!\n" << std::endl;
 	}
-	
+
 }
 
 PS3TextDump::~PS3TextDump()
@@ -94,7 +94,7 @@ BOOL PS3TextDump::CreateDumpFile()
 {
 	errno_t err = 0;
 	std::wstring dumpFileName = m_wsPath + L".txt";
-	err = _wfopen_s(&m_fpTextFile, dumpFileName.c_str(), L"r");
+	err = _wfopen_s(&m_fpTextFile, dumpFileName.c_str(), L"rt");
 	if (!err && m_fpTextFile)
 	{
 		char flag = 0;
@@ -106,8 +106,7 @@ BOOL PS3TextDump::CreateDumpFile()
 		}
 		fclose(m_fpTextFile);
 	}
-
-	err = _wfopen_s(&m_fpTextFile, dumpFileName.c_str(), L"w+");
+	err = _wfopen_s(&m_fpTextFile, dumpFileName.c_str(), L"wt+,ccs=UTF-16LE");
 	return ~err;
 }
 
@@ -141,7 +140,8 @@ VOID PS3TextDump::DumpText()
 		{
 			textFileOffset = strAddr - m_PS3Info.pPS3File;
 			codeFileOffset = p - m_PS3Info.pPS3File;
-			fprintf_s(m_fpTextFile, "[Text:0x%08X Code:0x%08X]\nRaw:%s\nTra:\n\n", textFileOffset, codeFileOffset, (PCHAR)strAddr);
+			std::wstring wText = StrToWstr(strFilter);
+			fwprintf_s(m_fpTextFile, L"[Text:0x%08X Code:0x%08X]\nRaw:%s\nTra:\n\n", textFileOffset, codeFileOffset, wText.c_str());
 			fflush(m_fpTextFile);
 		}
 	}
@@ -200,34 +200,39 @@ BOOL PS3TextInset::GetPS3FileInfo()
 
 BOOL PS3TextInset::InsetTextFile()
 {
-	char newText[0xFF] = { 0 };
+	std::string mText;
+	std::wstring wText;
+	WCHAR newText[0xFF] = { 0 };
 	DWORD offsetCode = 0;
 	DWORD strLen = 0;
 	FILE* fpTextFile;
 
-	errno_t err = _wfopen_s(&fpTextFile, m_wsTextPath.c_str(), L"r+");
+	errno_t err = _wfopen_s(&fpTextFile, m_wsTextPath.c_str(), L"rt+,ccs=UTF-16LE");
 	if (!err && fpTextFile != NULL)
 	{
 		while (feof(fpTextFile) == 0)
 		{
-			if (fscanf_s(fpTextFile, "[Text:0x%*x Code:0x%x]\n\r", &offsetCode))
+			if (fwscanf_s(fpTextFile, L"[Text:0x%*x Code:0x%x]\n\r", &offsetCode))
 			{
 				continue;
 			}
 
-			fscanf_s(fpTextFile, "Raw:%*[^\n]\r");
+			fwscanf_s(fpTextFile, L"Raw:%*[^\n]\r");
 
-			if (!fscanf_s(fpTextFile, "Tra:%[^\n]\r", newText, sizeof(newText)))
+			if (!fwscanf_s(fpTextFile, L"Tra:%[^\n]\r", newText, sizeof(newText)))
 			{
 				//If Tra: is null
-				fscanf_s(fpTextFile, "\n\r\n\r");
+				fwscanf_s(fpTextFile, L"\n\r\n\r");
 				continue;
 			}
-			strLen = strlen(newText) + 1;
 
 			//Append text at the end of the file
+			wText = newText;
+			mText = WstrToStr(wText);
+			strLen = mText.length() + 1;
+
 			fseek(m_fpPS3File, 0, SEEK_END);
-			fwrite(newText, sizeof(BYTE), strLen, m_fpPS3File);
+			fwrite(mText.c_str(), sizeof(BYTE), strLen, m_fpPS3File);
 
 			//Modify the codeblock PushStr address
 			fseek(m_fpPS3File, offsetCode, SEEK_SET);
