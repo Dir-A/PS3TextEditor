@@ -36,9 +36,9 @@ public:
 	PS3TextEditor();
 	~PS3TextEditor();
 
-	BYTE		m_abFlagPushStr[4];
-	PS3INFO		m_PS3Info;
-	PS3HEADER	m_Header;
+	PS3INFO m_PS3Info;
+	PS3HEADER m_Header;
+	BYTE m_abFlagPushStr[4];
 
 	virtual BOOL GetPS3FileInfo() = 0;
 
@@ -47,9 +47,9 @@ public:
 class PS3TextDump : public PS3TextEditor
 {
 private:
-	FILE*				m_fpTextFile;
-	std::wstring		m_wsPath;
-	std::vector<DWORD>	m_vppStr;
+	FILE* m_fpTextFile;
+	std::wstring m_wsPath;
+	std::vector<DWORD> m_vppStr;
 
 	BOOL GetPS3FileInfo();
 	VOID SearchOffset();
@@ -65,10 +65,10 @@ public:
 class PS3TextInset : public PS3TextEditor
 {
 private:
-	FILE*			m_fpPS3File;
-	DWORD			m_countInset;
-	std::wstring	m_wsPS3FilePath;
-	std::wstring&	m_wsTextPath;
+	FILE* m_fpPS3File;
+	DWORD m_countInset;
+	std::wstring& m_wsTextPath;
+	std::wstring m_wsPS3FilePath;
 
 	BOOL GetPS3FileInfo();
 	BOOL InsetTextFile();

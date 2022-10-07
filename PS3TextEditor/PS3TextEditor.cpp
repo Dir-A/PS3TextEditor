@@ -95,9 +95,8 @@ VOID PS3TextDump::SearchOffset()
 
 BOOL PS3TextDump::CreateDumpFile()
 {
-	errno_t err = 0;
 	std::wstring dumpFileName = m_wsPath + L".txt";
-	err = _wfopen_s(&m_fpTextFile, dumpFileName.c_str(), L"rt");
+	errno_t err = _wfopen_s(&m_fpTextFile, dumpFileName.c_str(), L"rt");
 	if (!err && m_fpTextFile)
 	{
 		char flag = 0;
@@ -115,9 +114,9 @@ BOOL PS3TextDump::CreateDumpFile()
 
 VOID PS3TextDump::DumpText()
 {
-	DWORD		strAddr = 0;
-	DWORD		textFileOffset = 0;
-	DWORD		codeFileOffset = 0;
+	DWORD strAddr = 0;
+	DWORD textFileOffset = 0;
+	DWORD codeFileOffset = 0;
 	std::string strFilter;
 
 	for (auto& pStr : m_vppStr)
@@ -212,12 +211,12 @@ BOOL PS3TextInset::GetPS3FileInfo()
 
 BOOL PS3TextInset::InsetTextFile()
 {
-	FILE*			fpTextFile;
-	WCHAR			newText[0xFF] = { 0 };
-	DWORD			offsetCode = 0;
-	DWORD			strLen = 0;
-	std::string		mText;
-	std::wstring	wText;
+	FILE* fpTextFile;
+	WCHAR newText[0xFF] = { 0 };
+	DWORD offsetCode = 0;
+	DWORD strLen = 0;
+	std::string mText;
+	std::wstring wText;
 
 	errno_t err = _wfopen_s(&fpTextFile, m_wsTextPath.c_str(), L"rt+,ccs=UTF-16LE");
 	if (!err && fpTextFile != NULL)

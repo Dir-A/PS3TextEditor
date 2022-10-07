@@ -4,9 +4,9 @@
 
 int main()
 {
-	CHAR						flag = 0;
-	std::vector<std::wstring>	filesNameW;
-	std::wstring				basePathW = L".\\";
+	CHAR flag = 0;
+	std::wstring basePathW = L".\\";
+	std::vector<std::wstring> filesNameW;
 
 	std::cout << "Input [ d ] to Extract Text From .ps3 .ps2 Files and Save it as .txt\n";
 	std::cout << "Input [ i ] to Insert Text From .txt Files and Save it as .ps3.new\n";
