@@ -1,5 +1,8 @@
 #include "PS3TextEditor.h"
 
+BOOL g_isFullText = FALSE;
+
+
 PS3TextEditor::PS3TextEditor() :
 	m_Header{ 0 },
 	m_PS3Info{ 0 },
@@ -112,14 +115,14 @@ BOOL PS3TextDump::CreateDumpFile()
 
 VOID PS3TextDump::DumpText()
 {
-	DWORD strAddr = 0;
-	DWORD textFileOffset = 0;
-	DWORD codeFileOffset = 0;
+	DWORD		strAddr = 0;
+	DWORD		textFileOffset = 0;
+	DWORD		codeFileOffset = 0;
 	std::string strFilter;
 
-	for (auto& p : m_vppStr)
+	for (auto& pStr : m_vppStr)
 	{
-		strAddr = m_PS3Info.pTextBlock + *(PDWORD)p;
+		strAddr = m_PS3Info.pTextBlock + *(PDWORD)pStr;
 		strFilter = (PCHAR)strAddr;
 
 		//Filter Files Name String Line
@@ -139,9 +142,18 @@ VOID PS3TextDump::DumpText()
 		else
 		{
 			textFileOffset = strAddr - m_PS3Info.pPS3File;
-			codeFileOffset = p - m_PS3Info.pPS3File;
+			codeFileOffset = pStr - m_PS3Info.pPS3File;
 			std::wstring wText = StrToWstr(strFilter);
-			fwprintf_s(m_fpTextFile, L"[Text:0x%08X Code:0x%08X]\nRaw:%s\nTra:\n\n", textFileOffset, codeFileOffset, wText.c_str());
+
+			if (!g_isFullText)
+			{
+				fwprintf_s(m_fpTextFile, L"[Text:0x%08X Code:0x%08X]\nRaw:%s\nTra:\n\n", textFileOffset, codeFileOffset, wText.c_str());
+			}
+			else
+			{
+				fwprintf_s(m_fpTextFile, L"[Text:0x%08X Code:0x%08X]\nRaw:%s\nTra:%s\n\n", textFileOffset, codeFileOffset, wText.c_str(), wText.c_str());
+			}
+
 			fflush(m_fpTextFile);
 		}
 	}
@@ -200,12 +212,12 @@ BOOL PS3TextInset::GetPS3FileInfo()
 
 BOOL PS3TextInset::InsetTextFile()
 {
-	std::string mText;
-	std::wstring wText;
-	WCHAR newText[0xFF] = { 0 };
-	DWORD offsetCode = 0;
-	DWORD strLen = 0;
-	FILE* fpTextFile;
+	FILE*			fpTextFile;
+	WCHAR			newText[0xFF] = { 0 };
+	DWORD			offsetCode = 0;
+	DWORD			strLen = 0;
+	std::string		mText;
+	std::wstring	wText;
 
 	errno_t err = _wfopen_s(&fpTextFile, m_wsTextPath.c_str(), L"rt+,ccs=UTF-16LE");
 	if (!err && fpTextFile != NULL)
