@@ -30,6 +30,7 @@ private:
 		DWORD pPS3File;
 		DWORD pCodeBlock;
 		DWORD pTextBlock;
+		DWORD dwCodeBlockLen;
 	};
 
 public:

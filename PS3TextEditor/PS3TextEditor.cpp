@@ -59,11 +59,13 @@ BOOL PS3TextDump::GetPS3FileInfo()
 		m_PS3Info.pPS3File = (DWORD)VirtualAlloc(NULL, GetFileSize(hFile, NULL), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 		if (m_PS3Info.pPS3File != NULL)
 		{
-			if (ReadFile(hFile, (LPVOID)m_PS3Info.pPS3File, GetFileSize(hFile, NULL), NULL, NULL))
+			if (ReadFile(hFile, (PBYTE)m_PS3Info.pPS3File, GetFileSize(hFile, NULL), NULL, NULL))
 			{
-				memcpy(&m_Header, (PVOID)m_PS3Info.pPS3File, sizeof(m_Header));
+				memcpy(&m_Header, (PBYTE)m_PS3Info.pPS3File, sizeof(m_Header));
 				m_PS3Info.pCodeBlock = m_PS3Info.pPS3File + m_Header.dwHeaderLen;
 				m_PS3Info.pTextBlock = m_PS3Info.pPS3File + m_Header.dwHeaderLen + (4 * m_Header.dwTextCount) + m_Header.dwCodeBlockLen;
+				//Fix Len
+				m_PS3Info.dwCodeBlockLen = m_PS3Info.pTextBlock - m_PS3Info.pPS3File;
 				CloseHandle(hFile);
 				return TRUE;
 			}
@@ -84,9 +86,9 @@ BOOL PS3TextDump::GetPS3FileInfo()
 
 VOID PS3TextDump::SearchOffset()
 {
-	for (size_t i = 0; i < m_Header.dwCodeBlockLen; i++)
+	for (size_t i = 0; i < m_PS3Info.dwCodeBlockLen; i++)
 	{
-		if (!memcmp(m_abFlagPushStr, (PVOID)(m_PS3Info.pCodeBlock + i), sizeof(m_abFlagPushStr)))
+		if (!memcmp(m_abFlagPushStr, (PBYTE)(m_PS3Info.pCodeBlock + i), sizeof(m_abFlagPushStr)))
 		{
 			m_vppStr.push_back(m_PS3Info.pCodeBlock + i + sizeof(m_abFlagPushStr));
 		}
