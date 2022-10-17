@@ -4,7 +4,6 @@
 #include <vector>
 #include "ConvertString.h"
 
-extern BOOL g_isFullText;
 
 class PS3TextEditor
 {
@@ -17,12 +16,12 @@ private:
 		DWORD dwKey;
 		DWORD dwTextCount;
 		DWORD dwCodeBlockLen;
-		DWORD dwUnknown2;
+		DWORD dwUnknown1;
 		DWORD dwTextBlockLen;
-		DWORD dwUnknown3;
+		DWORD dwUnknown2;
 		DWORD dwCompressSize;
 		DWORD dwDecompressSize;
-		DWORD dwUnknown4;
+		DWORD dwUnknown3;
 	};
 
 	struct PS3INFO
@@ -48,6 +47,8 @@ public:
 class PS3TextDump : public PS3TextEditor
 {
 private:
+	BOOL m_isFullText;
+	DWORD m_dwCodePage;
 	FILE* m_fpTextFile;
 	std::wstring m_wsPath;
 	std::vector<DWORD> m_vppStr;
@@ -58,7 +59,7 @@ private:
 	VOID DumpText();
 
 public:
-	PS3TextDump(std::wstring& wsPath);
+	PS3TextDump(std::wstring& wsPath, DWORD dwCodePage, BOOL isFullText);
 	~PS3TextDump();
 
 };
@@ -66,6 +67,7 @@ public:
 class PS3TextInset : public PS3TextEditor
 {
 private:
+	DWORD m_dwCodePage;
 	FILE* m_fpPS3File;
 	DWORD m_countInset;
 	std::wstring& m_wsTextPath;
@@ -75,7 +77,7 @@ private:
 	BOOL InsetTextFile();
 
 public:
-	PS3TextInset(std::wstring& TextPath);
+	PS3TextInset(std::wstring& wsPath, DWORD dwCodePage);
 	~PS3TextInset();
 
 };

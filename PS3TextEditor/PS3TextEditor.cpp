@@ -1,8 +1,5 @@
 #include "PS3TextEditor.h"
 
-BOOL g_isFullText = FALSE;
-
-
 PS3TextEditor::PS3TextEditor() :
 	m_Header{ 0 },
 	m_PS3Info{ 0 },
@@ -17,7 +14,9 @@ PS3TextEditor::~PS3TextEditor()
 }
 
 
-PS3TextDump::PS3TextDump(std::wstring& wsPath) :
+PS3TextDump::PS3TextDump(std::wstring& wsPath, DWORD dwCodePage, BOOL isFullText) :
+	m_isFullText(isFullText),
+	m_dwCodePage(dwCodePage),
 	m_wsPath(wsPath),
 	m_fpTextFile(0)
 {
@@ -144,9 +143,9 @@ VOID PS3TextDump::DumpText()
 		{
 			textFileOffset = strAddr - m_PS3Info.pPS3File;
 			codeFileOffset = pStr - m_PS3Info.pPS3File;
-			std::wstring wText = StrToWstr(strFilter);
+			std::wstring wText = StrToWstr(strFilter, m_dwCodePage);
 
-			if (!g_isFullText)
+			if (!m_isFullText)
 			{
 				fwprintf_s(m_fpTextFile, L"[Text:0x%08X Code:0x%08X]\nRaw:%s\nTra:\n\n", textFileOffset, codeFileOffset, wText.c_str());
 			}
@@ -161,7 +160,8 @@ VOID PS3TextDump::DumpText()
 }
 
 
-PS3TextInset::PS3TextInset(std::wstring& wsPath) :
+PS3TextInset::PS3TextInset(std::wstring& wsPath,DWORD dwCodePage) :
+	m_dwCodePage(dwCodePage),
 	m_wsTextPath(wsPath),
 	m_countInset(0),
 	m_fpPS3File(0)
@@ -187,7 +187,6 @@ PS3TextInset::PS3TextInset(std::wstring& wsPath) :
 
 PS3TextInset::~PS3TextInset()
 {
-	free((PVOID)m_PS3Info.pPS3File);
 	fclose(m_fpPS3File);
 }
 
@@ -241,7 +240,7 @@ BOOL PS3TextInset::InsetTextFile()
 
 			//Append text at the end of the file
 			wText = newText;
-			mText = WstrToStr(wText);
+			mText = WstrToStr(wText, m_dwCodePage);
 			strLen = mText.length() + 1;
 
 			fseek(m_fpPS3File, 0, SEEK_END);

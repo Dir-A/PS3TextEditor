@@ -9,11 +9,14 @@ class EnumFilesA
 {
 public:
 	EnumFilesA(std::string& strPath);
-	VOID FindFiles(std::string);
+
 	std::vector<std::string>& GetFilesPath();
 	std::vector<std::string>& GetFilesName();
 	std::vector<std::string>& GetFilesNameBasePath();
+
 private:
+	VOID FindFiles(std::string);
+
 	std::string rootPath;
 	std::vector<std::string> filesPath;
 	std::vector<std::string> filesName;
@@ -24,11 +27,13 @@ class EnumFilesW
 {
 public:
 	EnumFilesW(std::wstring& strPath);
-	VOID FindFiles(std::wstring);
+
 	std::vector<std::wstring>& GetFilesPath();
 	std::vector<std::wstring>& GetFilesName(); 
 	std::vector<std::wstring>& GetFilesNameBasePath();
 private:
+	VOID FindFiles(std::wstring);
+
 	std::wstring rootPath;
 	std::vector<std::wstring> filesPath;
 	std::vector<std::wstring> filesName;
